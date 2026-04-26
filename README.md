@@ -2,6 +2,10 @@
 
 `hcman` 是一个可全局安装的 npm CLI，用来把本地的 `Codex`、`Claude Code`、`Gemini CLI`、`OpenCode` 配置切换到你的服务商域名。这个示例默认预设是 `https://www.hicode.codes`，用途和 `ccman` 属于同一类，但实现是从零写的，更适合你二次修改和发布。
 
+## 内测
+
+如果你准备先让少量用户从 GitHub 安装并试用，请先看 [BETA_TESTING.md](./BETA_TESTING.md)。
+
 ## 功能
 
 - 管理多个 provider 配置
