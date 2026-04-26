@@ -1,0 +1,37 @@
+{
+  "name": "hcman",
+  "version": "0.1.0",
+  "description": "Manage Codex, Claude Code, Gemini CLI, and OpenCode provider configs with a HiCode preset",
+  "type": "module",
+  "bin": {
+    "hcman": "bin/hcman.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "pack:check": "npm pack --dry-run"
+  },
+  "keywords": [
+    "codex",
+    "claude-code",
+    "gemini-cli",
+    "opencode",
+    "hicode",
+    "cli",
+    "config"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "commander": "^12.1.0",
+    "inquirer": "^9.3.7"
+  }
+}
