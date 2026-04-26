@@ -56,6 +56,18 @@ hcman gm
 hcman oc
 ```
 
+使用 HiCode 快捷命令，先选服务，再输入密钥：
+
+```bash
+hcman hicode
+```
+
+也可以直接指定服务：
+
+```bash
+hcman hicode sk-your-key --platform codex,claude
+```
+
 只保存 provider，不立即切换：
 
 ```bash

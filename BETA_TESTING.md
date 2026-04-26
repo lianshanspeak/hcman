@@ -85,7 +85,27 @@ hcman init --api-key sk-test-demo
 - 输出里是否列出了写入的文件
 - 再执行 `hcman status` 是否能看到当前 provider
 
-### 3. 验证交互式菜单
+### 3. 验证 HiCode 快捷配置
+
+执行：
+
+```bash
+hcman hicode
+```
+
+重点看：
+
+- 是否会先提示选择服务
+- 输入 API Key 后，是否只写入选中的服务配置
+- `https://www.hicode.codes` 是否被自动带入
+
+也可以测试非交互模式：
+
+```bash
+hcman hicode sk-test-demo --platform codex,claude
+```
+
+### 4. 验证交互式菜单
 
 依次测试：
 
@@ -103,7 +123,7 @@ hcman oc
 - 子菜单里的 `添加 / 切换 / 列表 / 当前 / 编辑 / 克隆 / 删除` 是否可用
 - 操作后是否会出现异常退出或卡死
 
-### 4. 验证 provider 管理命令
+### 5. 验证 provider 管理命令
 
 建议按顺序执行：
 
@@ -124,7 +144,7 @@ hcman cx list
 - 克隆后是否会出现重名覆盖
 - 列表显示是否清楚
 
-### 5. 验证配置文件实际内容
+### 6. 验证配置文件实际内容
 
 建议检查这些文件是否真的被更新：
 
@@ -141,7 +161,7 @@ cat ~/.config/opencode/opencode.json
 - API Key 和 Base URL 是否写到了预期位置
 - 再次切换 provider 后内容是否跟着变化
 
-### 6. 验证编辑和回写
+### 7. 验证编辑和回写
 
 重点测试：
 

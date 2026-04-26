@@ -76,6 +76,10 @@ function printChangedFiles(paths) {
   }
 }
 
+function formatToolNames(tools) {
+  return tools.map((tool) => TOOL_LABELS[tool]).join(', ')
+}
+
 function printToolProviderList(store, tool = 'all') {
   const currentProviders = getCurrentProviders(store)
 
@@ -317,6 +321,10 @@ async function saveProviderFromOptions(options) {
     throw new Error('API Key 不能为空')
   }
 
+  return saveProvider(input)
+}
+
+async function saveProvider(input) {
   const provider = buildProvider(input)
   const store = await loadStore()
   const saved = upsertProvider(store, provider)
@@ -462,6 +470,89 @@ async function listProviders(tool = 'all') {
   const resolvedTool = resolveTool(tool)
   const store = await loadStore()
   printToolProviderList(store, resolvedTool)
+}
+
+function parseSelectedTools(platforms) {
+  if (!platforms || platforms === 'all') {
+    return [...TOOL_NAMES]
+  }
+
+  const selectedTools = [
+    ...new Set(
+      platforms
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .map((item) => resolveTool(item))
+    )
+  ]
+
+  if (selectedTools.length === 0) {
+    throw new Error('至少选择一个服务')
+  }
+
+  return selectedTools
+}
+
+async function promptSelectedTools(defaultSelectedTools = []) {
+  const answers = await inquirer.prompt([
+    {
+      type: 'checkbox',
+      name: 'selectedTools',
+      message: '选择要配置的服务',
+      choices: TOOL_NAMES.map((tool) => ({
+        name: TOOL_LABELS[tool],
+        value: tool,
+        checked: defaultSelectedTools.includes(tool)
+      })),
+      validate: (value) => (value.length > 0 ? true : '至少选择一个服务')
+    }
+  ])
+
+  return answers.selectedTools
+}
+
+async function promptApiKey(message = 'API Key') {
+  const answers = await inquirer.prompt([
+    {
+      type: 'password',
+      name: 'apiKey',
+      message,
+      mask: '*',
+      validate: (value) => (value?.trim() ? true : 'API Key 不能为空')
+    }
+  ])
+
+  return answers.apiKey.trim()
+}
+
+async function applyProviderToTools(provider, selectedTools) {
+  const store = await loadStore()
+  const changedFiles = []
+
+  for (const tool of selectedTools) {
+    changedFiles.push(...(await applyProvider(provider, tool)))
+    setCurrentProvider(store, provider, tool)
+  }
+
+  await saveStore(store)
+  return changedFiles
+}
+
+async function runHiCodeShortcut(options = {}) {
+  const selectedTools = options.platforms ? parseSelectedTools(options.platforms) : await promptSelectedTools()
+  const apiKey = options.apiKey?.trim() || (await promptApiKey('请输入 HiCode API Key'))
+  const { provider } = await saveProvider({
+    name: 'hicode',
+    description: 'HiCode preset',
+    domain: DEFAULT_DOMAIN,
+    apiKey
+  })
+  const changedFiles = await applyProviderToTools(provider, selectedTools)
+
+  console.log(`已将 hicode 应用到: ${formatToolNames(selectedTools)}`)
+  printProvider(provider)
+  printChangedFiles(changedFiles)
 }
 
 async function quickInitInteractive() {
@@ -629,6 +720,7 @@ async function startMainMenu() {
           { name: 'Claude Code 管理', value: 'claude' },
           { name: 'Gemini CLI 管理', value: 'gemini' },
           { name: 'OpenCode 管理', value: 'opencode' },
+          { name: 'HiCode 快捷配置', value: 'hicode' },
           { name: '一键初始化 HiCode', value: 'init' },
           { name: '查看当前状态', value: 'status' },
           { name: '退出', value: 'exit' }
@@ -647,6 +739,10 @@ async function startMainMenu() {
         case 'gemini':
         case 'opencode':
           await startToolMenu(answers.action)
+          break
+        case 'hicode':
+          await runHiCodeShortcut()
+          await pause()
           break
         case 'init':
           await quickInitInteractive()
@@ -751,6 +847,18 @@ export async function run(argv = process.argv) {
     .name('hcman')
     .description('HiCode provider manager for Codex, Claude Code, Gemini CLI, and OpenCode')
     .version('0.1.0')
+
+  program
+    .command('hicode [apiKey]')
+    .description('固定使用 https://www.hicode.codes，选择服务后写入配置')
+    .option('-p, --platform <platforms>', '指定服务，支持 codex,claude,gemini,opencode,all')
+    .action(async function (apiKey) {
+      const options = this.opts()
+      await runHiCodeShortcut({
+        apiKey,
+        platforms: options.platform
+      })
+    })
 
   program
     .command('init')
